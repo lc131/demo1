@@ -20,6 +20,7 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String projectName;
     @ManyToMany(mappedBy = "projects")
     @JsonManagedReference //Parent / Owner side
