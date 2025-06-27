@@ -59,36 +59,10 @@ public class EmployeeController {
 //    }
     @PostMapping
     public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody CreateEmployeeRequest request) {
-
-        // Create Employee
-        Employee emp = new Employee();
-        emp.setFirstName(request.firstName);
-        emp.setLastName(request.lastName);
-        emp.setEmailId(request.emailId);
-
-        // Department (find or create)
-        Department dept = departmentRepository.findByName(request.departmentName)
-                .orElseGet(() -> departmentRepository.save(new Department(null, request.departmentName, new ArrayList<>())));
-        emp.setDepartment(dept);
-
-        // Address (always create new)
-        Address addr = new Address();
-        addr.setStreet(request.address.street);
-        addr.setCity(request.address.city);
-        addr.setCountry(request.address.country);
-        addressRepository.save(addr);
-        emp.setAddress(addr);
-
-        // Projects (find or create)
-        Set<Project> projects = request.projectNames.stream()
-                .map(name -> projectRepository.findByProjectName(name)
-                        .orElseGet(() -> projectRepository.save(new Project(null, name, new HashSet<>())))
-                ).collect(Collectors.toSet());
-        emp.setProjects(projects);
-
-        Employee saved = employeeService.createEmployee(emp);
-        return ResponseEntity.ok(new EmployeeDTO(saved));
+        EmployeeDTO saved = employeeService.createEmployeeWithDetails(request);
+        return ResponseEntity.ok(saved);
     }
+
     // GET employee by ID
     @GetMapping("/{id}")
     public ResponseEntity<Employee> getEmployeeById(@PathVariable long id) {
