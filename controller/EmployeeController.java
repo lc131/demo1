@@ -72,13 +72,12 @@ public class EmployeeController {
     }
 
     // UPDATE projects
-    @PutMapping("/{id}/projects")
-    public ResponseEntity<EmployeeDTO> updateEmployeeProjects(
-            @PathVariable long id,
+    @PutMapping("/projects")
+    public ResponseEntity<Void> updateEmployeeProjects(
             @RequestBody UpdateEmployeeProjectsRequest request) {
 
-        EmployeeDTO updated = employeeService.updateEmployeeProjects(id, request);
-        return ResponseEntity.ok(updated);
+        employeeService.updateEmployeeProjects(request);
+        return ResponseEntity.ok().build();
     }
 
     // UPDATE employee

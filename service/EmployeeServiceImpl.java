@@ -148,31 +148,31 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface{
     }
 
     // Update project
-    public EmployeeDTO updateEmployeeProjects(long id, UpdateEmployeeProjectsRequest request) {
-        Employee employee = employeeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
+    public void updateEmployeeProjects(UpdateEmployeeProjectsRequest request) {
+        for (UpdateEmployeeProjectsRequest.EmployeeProjectUpdate update : request.updates) {
+            Employee emp = employeeRepository.findById(update.employeeId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Employee not found: " + update.employeeId));
 
-        // ADD projects
-        if (request.addProjects != null) {
-            for (String projectName : request.addProjects) {
-                Project project = projectRepository.findByProjectName(projectName)
-                        .orElseGet(() -> projectRepository.save(new Project(null, projectName, new HashSet<>())));
-                employee.addProject(project); // maintain bidirectional
+            // Add projects
+            if (update.addProjects != null) {
+                for (String name : update.addProjects) {
+                    Project proj = projectRepository.findByProjectName(name)
+                            .orElseGet(() -> projectRepository.save(new Project(null, name, new HashSet<>())));
+                    emp.addProject(proj);
+                }
             }
-        }
 
-        // REMOVE projects
-        if (request.removeProjects != null) {
-            for (String projectName : request.removeProjects) {
-                Project project = projectRepository.findByProjectName(projectName)
-                        .orElseThrow(() -> new ResourceNotFoundException("Project not found: " + projectName));
-                employee.removeProject(project); // bidirectional remove
+            // Remove projects
+            if (update.removeProjects != null) {
+                for (String name : update.removeProjects) {
+                    projectRepository.findByProjectName(name).ifPresent(emp::removeProject);
+                }
             }
-        }
 
-        employeeRepository.save(employee);
-        return new EmployeeDTO(employee);
+            employeeRepository.save(emp);
+        }
     }
+
 
 
     // DELETE employee
