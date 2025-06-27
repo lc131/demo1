@@ -2,6 +2,7 @@ package com.example.springbootbackend.controller;
 
 import com.example.springbootbackend.dto.CreateEmployeeRequest;
 import com.example.springbootbackend.dto.EmployeeDTO;
+import com.example.springbootbackend.dto.UpdateEmployeeProjectsRequest;
 import com.example.springbootbackend.exception.ResourceNotFoundException;
 import com.example.springbootbackend.model.Address;
 import com.example.springbootbackend.model.Department;
@@ -70,11 +71,21 @@ public class EmployeeController {
         return ResponseEntity.ok(emp);
     }
 
+    // UPDATE projects
+    @PutMapping("/{id}/projects")
+    public ResponseEntity<EmployeeDTO> updateEmployeeProjects(
+            @PathVariable long id,
+            @RequestBody UpdateEmployeeProjectsRequest request) {
+
+        EmployeeDTO updated = employeeService.updateEmployeeProjects(id, request);
+        return ResponseEntity.ok(updated);
+    }
+
     // UPDATE employee
     @PutMapping("/{id}")
-    public ResponseEntity<Employee> updateEmployee(@PathVariable long id,
-                                                   @RequestBody Employee employeeDetails) {
-        Employee updated = employeeService.updateEmployee(id, employeeDetails);
+    public ResponseEntity<EmployeeDTO> updateEmployee(@PathVariable long id,
+                                                   @RequestBody CreateEmployeeRequest request) {
+        EmployeeDTO updated = employeeService.updateEmployee(id, request);
         return ResponseEntity.ok(updated);
     }
 

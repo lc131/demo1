@@ -2,6 +2,7 @@ package com.example.springbootbackend.service;
 
 import com.example.springbootbackend.dto.CreateEmployeeRequest;
 import com.example.springbootbackend.dto.EmployeeDTO;
+import com.example.springbootbackend.dto.UpdateEmployeeProjectsRequest;
 import com.example.springbootbackend.exception.ResourceNotFoundException;
 import com.example.springbootbackend.model.*;
 import com.example.springbootbackend.repository.AddressRepository;
@@ -53,18 +54,18 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface{
     @Override
     public EmployeeDTO createEmployeeWithDetails(CreateEmployeeRequest request) {
         // Create Employee
-        Employee emp = new Employee();
-        emp.setFirstName(request.firstName);
-        emp.setLastName(request.lastName);
-        emp.setEmailId(request.emailId);
+        Employee employee = new Employee();
+        employee.setFirstName(request.firstName);
+        employee.setLastName(request.lastName);
+        employee.setEmailId(request.emailId);
 
         // Department (find or create)
         Department dept = departmentRepository.findByName(request.departmentName)
                 .orElseGet(() -> departmentRepository.save(new Department(null, request.departmentName, new ArrayList<>())));
-        emp.setDepartment(dept);
+        employee.setDepartment(dept);
 
         // Address (find or create)
-        Address addr = addressRepository.findByStreetAndCityAndCountry(
+        Address address = addressRepository.findByStreetAndCityAndCountry(
                 request.address.street,
                 request.address.city,
                 request.address.country
@@ -75,17 +76,17 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface{
             newAddr.setCountry(request.address.country);
             return addressRepository.save(newAddr);
         });
-        emp.setAddress(addr);
+        employee.setAddress(address);
 
         // Projects (find or create)
         Set<Project> projects = request.projectNames.stream()
                 .map(name -> projectRepository.findByProjectName(name)
                         .orElseGet(() -> projectRepository.save(new Project(null, name, new HashSet<>())))
                 ).collect(Collectors.toSet());
-        emp.setProjects(projects);
+        employee.setProjects(projects);
 
         // Save and return
-        Employee saved = employeeRepository.save(emp);
+        Employee saved = employeeRepository.save(employee);
         return new EmployeeDTO(saved);
     }
 
@@ -96,31 +97,83 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface{
         return new EmployeeDTO(employee);
     }
 
-    // UPDATE employee
-    public Employee updateEmployee(long id, Employee employeeDetails) {
+    // UPDATE employee ( IF PROJECTS THEN ADD )
+    public EmployeeDTO updateEmployee(long id, CreateEmployeeRequest request) {
         Employee updateEmployee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not exist with id: " + id));
 
-        updateEmployee.setFirstName(employeeDetails.getFirstName());
-        updateEmployee.setLastName(employeeDetails.getLastName());
-        updateEmployee.setEmailId(employeeDetails.getEmailId());
+        //Basic fields
+        if (request.firstName != null) updateEmployee.setFirstName(request.firstName);
+        if (request.lastName != null) updateEmployee.setLastName(request.lastName);
+        if (request.emailId != null) updateEmployee.setEmailId(request.emailId);
 
-        // Cập nhật Department nếu có
-        if (employeeDetails.getDepartment() != null) {
-            updateEmployee.setDepartment(employeeDetails.getDepartment());
+        // Department (find or replace)
+        if (request.departmentName != null) {
+            Department dept = departmentRepository.findByName(request.departmentName)
+                    .orElseGet(() -> departmentRepository.save(new Department(null, request.departmentName, new ArrayList<>())));
+            updateEmployee.setDepartment(dept);
         }
 
-        // Cập nhật Address
-        updateEmployee.setAddress(employeeDetails.getAddress());
+        // Address (find or replace)
+        if (request.address != null &&
+                request.address.street != null &&
+                request.address.city != null &&
+                request.address.country != null) {
+            Address address = addressRepository.findByStreetAndCityAndCountry(
+                    request.address.street,
+                    request.address.city,
+                    request.address.country
+            ).orElseGet(() -> {
+                Address newAddr = new Address();
+                newAddr.setStreet(request.address.street);
+                newAddr.setCity(request.address.city);
+                newAddr.setCountry(request.address.country);
+                return addressRepository.save(newAddr);
+            });
 
-        // Cập nhật Project nếu có
-        Set<Project> updatedProjects = employeeDetails.getProjects();
-        if (updatedProjects != null) {
-            updateEmployee.setProjects(updatedProjects);
+            updateEmployee.setAddress(address);
         }
 
-        return employeeRepository.save(updateEmployee);
+        // Project (find or replace)
+        if (request.projectNames != null) {
+            Set<Project> projects = request.projectNames.stream()
+                    .map(projectName -> projectRepository.findByProjectName(projectName)
+                            .orElseGet(() -> projectRepository.save(new Project(null, projectName, new HashSet<>()))))
+                    .collect(Collectors.toSet());
+            updateEmployee.setProjects(projects);
+        }
+        Employee saved = employeeRepository.save(updateEmployee);
+        return new EmployeeDTO(saved);
+
     }
+
+    // Update project
+    public EmployeeDTO updateEmployeeProjects(long id, UpdateEmployeeProjectsRequest request) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
+
+        // ADD projects
+        if (request.addProjects != null) {
+            for (String projectName : request.addProjects) {
+                Project project = projectRepository.findByProjectName(projectName)
+                        .orElseGet(() -> projectRepository.save(new Project(null, projectName, new HashSet<>())));
+                employee.addProject(project); // maintain bidirectional
+            }
+        }
+
+        // REMOVE projects
+        if (request.removeProjects != null) {
+            for (String projectName : request.removeProjects) {
+                Project project = projectRepository.findByProjectName(projectName)
+                        .orElseThrow(() -> new ResourceNotFoundException("Project not found: " + projectName));
+                employee.removeProject(project); // bidirectional remove
+            }
+        }
+
+        employeeRepository.save(employee);
+        return new EmployeeDTO(employee);
+    }
+
 
     // DELETE employee
     public void deleteEmployee(long id) {
