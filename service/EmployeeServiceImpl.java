@@ -90,9 +90,10 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface{
     }
 
     // GET employee by ID
-    public Employee getEmployeeById(long id) {
-        return employeeRepository.findById(id)
+    public EmployeeDTO getEmployeeById(long id) {
+        Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not exist with id: " + id));
+        return new EmployeeDTO(employee);
     }
 
     // UPDATE employee
