@@ -42,9 +42,9 @@ public class SecurityConfig {
         http
                 .securityMatcher("/**")
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll() // Cho phép tất cả mọi người truy cập vào địa chỉ này
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll() // Cho phép tất cả mọi người truy cập vào địa chỉ này
                         .requestMatchers(HttpMethod.GET, "/api/v1/employees/**").hasAnyRole("ADMIN", "EMPLOYEE")
-                        .requestMatchers("/api/v1/employees/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/employees/**").hasRole("ADMIN") // ADMIN được POST, PUT, DELETE
                         .anyRequest().authenticated() // Tất cả các request khác đều cần phải xác thực mới được truy cập
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
