@@ -5,21 +5,20 @@ import com.example.springbootbackend.dto.EmployeeDTO;
 import com.example.springbootbackend.dto.UpdateEmployeeProjectsRequest;
 import com.example.springbootbackend.exception.ResourceNotFoundException;
 import com.example.springbootbackend.model.*;
-import com.example.springbootbackend.repository.AddressRepository;
-import com.example.springbootbackend.repository.DepartmentRepository;
-import com.example.springbootbackend.repository.EmployeeRepository;
-import com.example.springbootbackend.repository.ProjectRepository;
+import com.example.springbootbackend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service("EmployeeServiceImpl")
-public class EmployeeServiceImpl implements EmployeeServiceInterface{
+public class EmployeeServiceImpl implements EmployeeServiceInterface, UserDetailsService {
 
     @Autowired
     private EmployeeRepository employeeRepository;
@@ -32,6 +31,9 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface{
 
     @Autowired
     private ProjectRepository projectRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
 
     public EmployeeServiceImpl(EmployeeRepository employeeRepository) {
@@ -54,6 +56,7 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface{
     @Override
     public EmployeeDTO createEmployeeWithDetails(CreateEmployeeRequest request) {
         // Create Employee
+        // Will not create if not fill all infos.
         Employee employee = new Employee();
         employee.setFirstName(request.firstName);
         employee.setLastName(request.lastName);
@@ -97,7 +100,7 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface{
         return new EmployeeDTO(employee);
     }
 
-    // UPDATE employee ( IF PROJECTS THEN ADD )
+    // UPDATE employee (replace in4)
     public EmployeeDTO updateEmployee(long id, CreateEmployeeRequest request) {
         Employee updateEmployee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not exist with id: " + id));
@@ -147,11 +150,11 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface{
 
     }
 
-    // Update project
+    // Update project (Add or remove)
     public void updateEmployeeProjects(UpdateEmployeeProjectsRequest request) {
         for (UpdateEmployeeProjectsRequest.EmployeeProjectUpdate update : request.updates) {
-            Employee emp = employeeRepository.findById(update.employeeId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Employee not found: " + update.employeeId));
+            Employee emp = employeeRepository.findById(update.id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Employee not found: " + update.id));
 
             // Add projects
             if (update.addProjects != null) {
@@ -180,5 +183,18 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface{
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not exist with id: " + id));
         employeeRepository.delete(employee);
+    }
+
+    // LOAD USER
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        ApplicationUser user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return new User(
+                user.getUsername(),
+                user.getPassword(),
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+        );
     }
 }

@@ -5,7 +5,7 @@ import java.util.List;
 public class UpdateEmployeeProjectsRequest {
     public List<EmployeeProjectUpdate> updates;
     public static class EmployeeProjectUpdate {
-        public Long employeeId;
+        public Long id;
         public List<String> addProjects;
         public List<String> removeProjects;
     }
