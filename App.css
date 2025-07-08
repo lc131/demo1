@@ -1,0 +1,21 @@
+.employee-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.employee-table th,
+.employee-table td {
+  padding: 0.75rem;
+  border: 1px solid var(--border-color2);
+  text-align: left;
+}
+
+.employee-table th {
+  background-color: var(--sky-blue);
+  font-weight: 600;
+}
+
+.employee-table tr:nth-child(even) {
+  background-color: var(--light-gray);
+}

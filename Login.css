@@ -1,0 +1,169 @@
+/* General body styling */
+textarea{
+    font: inherit;
+}
+body {
+    margin: 0;
+        font-family: 'Inter', sans-serif; /* Using Inter font, fall back to sans-serif */
+    /*background-color: #161717; !*  background *!*/
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Ensure it takes full viewport height */
+    color: #333; /* Default text color */
+    overflow: hidden;
+}
+
+/* Container for the entire login page, helps with centering */
+.login-page-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Ensure it covers the full height */
+    width: 100%; /* Take full width */
+    padding: 20px; /* Add some padding on smaller screens */
+    box-sizing: border-box; /* Include padding in element's total width and height */
+}
+
+/* Styling for the login form card */
+.login-form {
+    background-color: #d3e8f5; /* White background for the form */
+    padding: 40px;
+    border-radius: 12px; /* Slightly more rounded corners */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); /* Soft, subtle shadow */
+    width: 100%;
+    max-width: 400px; /* Max width for desktop view */
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Space between form elements */
+    box-sizing: border-box;
+}
+
+/* User Icon Circle at the top */
+.user-icon-circle {
+    width: 100px;
+    height: 100px;
+    background-color: #a7d9f7; /* Light blue background for the circle */
+    border-radius: 50%; /* Makes it a perfect circle */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px; /* Space below the icon */
+    border: 2px solid #58b0e0; /* Border around the circle */
+}
+.user-icon {
+    width: 60px;
+    height: 60px;
+    color: #007bff; /* Blue color for the icon */
+}
+/* Title of the login form */
+.login-title {
+    text-align: center;
+    color: #2c3e50; /* Darker blue-gray for heading */
+    margin-bottom: 25px;
+    font-size: 1.8em; /* Slightly larger title */
+    font-weight: 600; /* Semi-bold */
+}
+
+/* Input group styling (for spacing) */
+.input-group {
+    position: relative;
+    width: 100%;
+}
+.input-icon {
+    position: absolute;
+    left: 15px; /* Position icon inside the input */
+    top: 50%;
+    transform: translateY(-50%);
+    color: #007bff; /* Blue color for input icons */
+    width: 20px;
+    height: 20px;
+}
+/* Styling for input fields */
+.login-input {
+    width: 100%;
+    /*padding: 14px 18px;*/
+    border: 1px solid #dcdcdc; /* Light gray border */
+    border-radius: 8px; /* Rounded input fields */
+    font-size: 1em;
+    color: #333;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for focus */
+    box-sizing: border-box; /* Important for padding and border to be inside width */
+}
+
+.login-input::placeholder {
+    color: #999; /* Lighter placeholder text */
+}
+
+.login-input:focus {
+    border-color: #007bff; /* Blue border on focus */
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); /* Subtle blue glow on focus */
+    outline: none; /* Remove default outline */
+}
+
+/* Styling for the login button */
+.login-button {
+    background-color: #007bff; /* Primary blue color */
+    color: #ffffff; /* White text */
+    padding: 14px 20px;
+    border: none;
+    border-radius: 8px; /* Rounded button */
+    font-size: 1.1em; /* Slightly larger font */
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth hover and press effects */
+    width: 100%; /* Full width button */
+    box-sizing: border-box;
+}
+
+.login-button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+    transform: translateY(-2px); /* Slight lift effect */
+}
+
+.login-button:active {
+    background-color: #004085; /* Even darker blue on click */
+    transform: translateY(0); /* Reset lift effect */
+}
+
+/* Error message styling */
+.error-message {
+    color: #dc3545; /* Red for error messages */
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 0.95em;
+    background-color: #f8d7da; /* Light red background */
+    border: 1px solid #f5c6cb; /* Red border */
+    border-radius: 8px;
+    padding: 10px;
+}
+
+/* Visually hidden label for accessibility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .login-form {
+        padding: 30px 20px; /* Reduce padding on smaller screens */
+        margin: 0 15px; /* Add some side margin */
+    }
+
+    .login-title {
+        font-size: 1.6em; /* Adjust title size */
+    }
+
+    .login-input, .login-button {
+        font-size: 0.95em; /* Adjust font size for inputs and buttons */
+        padding: 12px 15px;
+    }
+}
