@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { register } from '../api/auth';
+import '../Login.css';
 
 const Register = () => {
     const [username, setUsername] = useState('');
@@ -17,8 +18,8 @@ const Register = () => {
     return (
         <form onSubmit={handleSubmit} className="container">
             <h2>Register</h2>
-            <div className="input-box">
-                <label className="details">Username</label>
+            <div className="input-group">
+                <label className={"sr-only"}>Username</label>
                 <input
                     value={username}
                     onChange={e => setUsername(e.target.value)}
@@ -26,8 +27,8 @@ const Register = () => {
                     required
                 />
             </div>
-            <div className="input-box">
-                <label className="details">Password</label>
+            <div className="input-group">
+                <label className={"sr-only"}>Password</label>
                 <input
                     type="password"
                     value={password}
