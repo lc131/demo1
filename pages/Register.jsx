@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { register } from '../api/auth';
 import '../Login.css';
+import {Link} from "react-router-dom";
+import '../index.css';
 
 const Register = () => {
     const [username, setUsername] = useState('');
@@ -16,30 +18,41 @@ const Register = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="container">
-            <h2>Register</h2>
+        <div className="login-page-container">
+            <form onSubmit={handleSubmit} className="login-form">
+                <Link to="/login" className="btn"> ← Back</Link>
+                <h2 className="login-title"> Register </h2>
             <div className="input-group">
-                <label className={"sr-only"}>Username</label>
+                <label htmlFor="username-input" className={"sr-only"}>Username</label>
                 <input
-                    value={username}
-                    onChange={e => setUsername(e.target.value)}
+                    id="username-input"
+                    type="text"
                     placeholder="Username"
-                    required
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="login-input"
+                    required // Make username a required field
+                    aria-label="Enter your username"
                 />
             </div>
-            <div className="input-group">
-                <label className={"sr-only"}>Password</label>
-                <input
-                    type="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder="Password"
-                    required
-                />
-            </div>
+                {/*Input PASSWORD*/}
+                <div className="input-group">
+                    <label htmlFor="password-input" className={"sr-only"}>Password</label>
+                    <input
+                        id="password-input"
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="login-input"
+                        required
+                        aria-label="Enter your password"
+                    />
+                </div>
             {/* Role is default EMPLOYEE, hidden from user */}
-            <button type="submit" className="btn">Register</button>
+            <button type="submit" className="login-button">Sign up</button>
         </form>
+        </div>
     );
 };
 
