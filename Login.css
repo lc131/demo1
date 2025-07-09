@@ -1,7 +1,4 @@
 /* General body styling */
-textarea{
-    font: inherit;
-}
 body {
     margin: 0;
         font-family: 'Inter', sans-serif; /* Using Inter font, fall back to sans-serif */
@@ -11,7 +8,6 @@ body {
     align-items: center;
     min-height: 100vh; /* Ensure it takes full viewport height */
     color: #333; /* Default text color */
-    overflow: hidden;
 }
 
 /* Container for the entire login page, helps with centering */
@@ -39,23 +35,6 @@ body {
     box-sizing: border-box;
 }
 
-/* User Icon Circle at the top */
-.user-icon-circle {
-    width: 100px;
-    height: 100px;
-    background-color: #a7d9f7; /* Light blue background for the circle */
-    border-radius: 50%; /* Makes it a perfect circle */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 10px; /* Space below the icon */
-    border: 2px solid #58b0e0; /* Border around the circle */
-}
-.user-icon {
-    width: 60px;
-    height: 60px;
-    color: #007bff; /* Blue color for the icon */
-}
 /* Title of the login form */
 .login-title {
     text-align: center;
@@ -67,22 +46,13 @@ body {
 
 /* Input group styling (for spacing) */
 .input-group {
-    position: relative;
     width: 100%;
 }
-.input-icon {
-    position: absolute;
-    left: 15px; /* Position icon inside the input */
-    top: 50%;
-    transform: translateY(-50%);
-    color: #007bff; /* Blue color for input icons */
-    width: 20px;
-    height: 20px;
-}
+
 /* Styling for input fields */
 .login-input {
     width: 100%;
-    /*padding: 14px 18px;*/
+    padding: 14px 18px;
     border: 1px solid #dcdcdc; /* Light gray border */
     border-radius: 8px; /* Rounded input fields */
     font-size: 1em;

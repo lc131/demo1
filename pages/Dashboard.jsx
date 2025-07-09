@@ -4,7 +4,9 @@ import EmployeeCard from '../components/EmployeeCard';
 import Pagination from '../components/Pagination';
 import EmployeeForm from '../components/EmployeeForm';
 import { fetchAll, deleteOne } from '../api/employee';
+import { BiAddToQueue } from "react-icons/bi";
 import '../App.css';
+import '../index.css';
 
 export default function Dashboard() {
     const { role, logout } = useContext(AuthContext);
@@ -55,10 +57,10 @@ export default function Dashboard() {
     return (
         <div className="container">
             <header className="header">
-                <h1>Welcome, {role}</h1>
                 {role === 'ADMIN' && (
+
                     <button className="btn" onClick={() => setShowForm(true)}>
-                        + New
+                        <BiAddToQueue /> Add New
                     </button>
                 )}
                 <button className="btn btn-danger" onClick={logout}>

@@ -1,191 +1,214 @@
 // src/pages/EditEmployeePage.jsx
 import React, { useEffect, useState, useContext } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
-import  AuthContext  from '../context/AuthContext';
+import AuthContext  from '../context/AuthContext';
+import {updateProjects} from "../api/employee.js";
+import '../App.css';
+import '../index.css';
 
 export default function EditEmployeePage() {
     const { id } = useParams();
-    const navigate = useNavigate();
     const { role } = useContext(AuthContext);
-    const [emp, setEmp]     = useState(null);
-    const [form, setForm]   = useState({});
-    const [projUpdates, setProjUpdates] = useState({ addProjects: [], removeProjects: [] });
+    const [emp, setEmp] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [dirty, setDirty] = useState(false);
+
+    // Form state for basic info
+    const [form, setForm] = useState({
+        firstName: '',
+        lastName: '',
+        emailId: '',
+        departmentName: '',
+        address: { street: '', city: '', country: '' }
+    });
+
+    // Projects state: { name, progress, isNew, toRemove }
+    const [projects, setProjects] = useState([]);
+    const [newProjName, setNewProjName] = useState('');
 
     useEffect(() => {
-        // Fetch single employee
-        axios.get(`http://localhost:8080/api/v1/employees/${id}`)
+        const stored = JSON.parse(localStorage.getItem(`emp-prog-${id}`)) || {};
+        axios.get(`/api/v1/employees/${id}`)
             .then(res => {
-                setEmp(res.data);
+                const data = res.data;
+                setEmp(data);
                 setForm({
-                    firstName: res.data.firstName,
-                    lastName:  res.data.lastName,
-                    emailId:   res.data.emailId,
-                    departmentName: res.data.departmentName,
-                    address: res.data.address || {street:'',city:'',country:''}
+                    firstName: data.firstName,
+                    lastName:  data.lastName,
+                    emailId:   data.emailId,
+                    departmentName: data.departmentName,
+                    address: data.address || { street: '', city: '', country: '' }
                 });
+                const init = data.projectName.map(name => ({
+                    name,
+                    progress: stored[name] || 0,
+                    isNew: false,
+                    toRemove: false
+                }));
+                setProjects(init);
             })
-            .catch(() => alert('Failed to load'))
+            .catch(() => setError('Failed to load employee'))
             .finally(() => setLoading(false));
     }, [id]);
 
-    if (loading || !emp) return <p>Loading…</p>;
+    if (loading) return <p>Loading…</p>;
+    if (error)   return <p style={{ color: 'red' }}>{error}</p>;
     if (role !== 'ADMIN') return <p>Unauthorized</p>;
 
-    // Handle form change
-    const onChange = (field, value) =>
-        setForm(f => ({ ...f, [field]: value }));
-
-    // Handle saving main info
-    const saveInfo = async () => {
-        await axios.put(
-            `http://localhost:8080/api/v1/employees/${id}`,
-            form
-        );
-        alert('Info updated');
+    // Persist progress map
+    const saveProgressLocally = list => {
+        const map = list.reduce((acc, p) => ({ ...acc, [p.name]: p.progress }), {});
+        localStorage.setItem(`emp-prog-${id}`, JSON.stringify(map));
     };
 
-    // Handle project checkbox toggle
-    const toggleProject = (projName, done) => {
-        setProjUpdates(u => {
-            let adds   = new Set(u.addProjects);
-            let removes= new Set(u.removeProjects);
-            if (done) {
-                adds.add(projName);
-                removes.delete(projName);
-            } else {
-                removes.add(projName);
-                adds.delete(projName);
-            }
-            return {
-                addProjects: Array.from(adds),
-                removeProjects: Array.from(removes)
-            };
+    const onProgressChange = (idx, value) => {
+        setProjects(ps => {
+            const next = [...ps];
+            next[idx].progress = Number(value);
+            setDirty(true);
+            saveProgressLocally(next);
+            return next;
         });
     };
 
-    // Submit project updates
-    const saveProjects = async () => {
-        const payload = { updates: [{ id: Number(id), ...projUpdates }] };
-        await axios.put(
-            'http://localhost:8080/api/v1/employees/projects',
-            payload
-        );
-        alert('Projects updated');
+    const toggleRemove = idx => {
+        setProjects(ps => {
+            const next = ps.map((p,i) =>
+                i===idx ? { ...p, toRemove: !p.toRemove } : p
+            );
+            setDirty(true);
+            return next;
+        });
     };
 
-    return (
-        <div className="container">
-            <header className="header">
-                <h2>Edit Employee #{id}</h2>
-                <Link to="/" className="btn">Back to List</Link>
-            </header>
 
-            <section className="main">
-                {/* --- Basic Info Form --- */}
-                <div className="form-section">
-                    <h3>Basic Information</h3>
-                    <label>First Name</label>
+    const addProject = () => {
+        const name = newProjName.trim();
+        if (!name) return;
+        setProjects(ps => {
+            const next = [...ps, { name, progress: 0, isNew: true, toRemove: false }];
+            saveProgressLocally(next);
+            return next;
+        });
+        setNewProjName('');
+    };
+
+    const saveInfo = async () => {
+        try {
+            await axios.put(`/api/v1/employees/${id}`, form);
+            alert('Employee info updated');
+        } catch {
+            alert('Failed to update info');
+        }
+    };
+
+    const saveProjects = async () => {
+        // Prepare add/remove lists
+        const addProjects = projects
+            .filter(p => p.isNew && !p.toRemove)
+            .map(p => p.name);
+        const removeProjects = projects
+            .filter(p => p.toRemove && !p.isNew)
+            .map(p => p.name);
+
+        const payload = {
+            updates: [
+                { id: Number(id), addProjects, removeProjects }
+            ]
+        };
+
+        try {
+            await updateProjects(payload);
+            // Update local UI: remove projects marked for removal
+            setProjects(ps => ps.filter(p => !(p.toRemove && !p.isNew)));
+            alert('Projects updated');
+        } catch {
+            alert('Failed to update projects');
+        }
+    };
+
+return (
+    <div className="container">
+        <header className="header">
+            <h2>Edit Employee #{id}</h2>
+            <Link to="/" className="btn">← Back to List</Link>
+        </header>
+
+        <section className="main">
+            {/* Basic info form */}
+            <div className="edit-section">
+                <h3>Basic Information</h3>
+                {['firstName','lastName','emailId','departmentName'].map(field => (
+                    <div key={field} className="input-box">
+                        <label className="details">{field}</label>
+                        <input
+                            value={form[field]}
+                            onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))}
+                        />
+                    </div>
+                ))}
+                {['street','city','country'].map(loc => (
+                    <div key={loc} className="input-box">
+                        <label className="details">Address {loc}</label>
+                        <input
+                            value={form.address[loc]}
+                            onChange={e => setForm(f => ({
+                                ...f,
+                                address: { ...f.address, [loc]: e.target.value }
+                            }))}
+                        />
+                    </div>
+                ))}
+                <button className="btn" onClick={saveInfo}>Save Info</button>
+            </div>
+
+            {/* Projects */}
+            <div className="edit-section" style={{ marginTop: '2rem' }}>
+                <h3>Projects</h3>
+                {projects.map((p, idx) => (
+                    <div key={idx} style={{ marginBottom: '1rem', position: 'relative' }}>
+                        <button
+                            className={`proj-btn ${p.toRemove ? 'undo' : 'remove'}`}
+                            onClick={() => toggleRemove(idx)}
+                        >
+                            {p.toRemove ? 'Undo' : 'Remove'}
+                        </button>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ textDecoration: p.toRemove ? 'line-through' : 'none' }}>
+                  {p.name}
+                </span>
+                            <span>{p.progress}%</span>
+                        </div>
+                        <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={p.progress}
+                            disabled={p.toRemove}
+                            onChange={e => onProgressChange(idx, e.target.value)}
+                        />
+                    </div>
+                ))}
+                <div style={{ display: 'flex', gap: '0.5rem', margin: '1rem 0' }}>
                     <input
-                        value={form.firstName}
-                        onChange={e => onChange('firstName', e.target.value)}
+                        type="text"
+                        placeholder="New project name"
+                        value={newProjName}
+                        onChange={e => setNewProjName(e.target.value)}
                     />
-
-                    <label>Last Name</label>
-                    <input
-                        value={form.lastName}
-                        onChange={e => onChange('lastName', e.target.value)}
-                    />
-
-                    <label>Email</label>
-                    <input
-                        value={form.emailId}
-                        onChange={e => onChange('emailId', e.target.value)}
-                    />
-
-                    <label>Department</label>
-                    <input
-                        value={form.departmentName}
-                        onChange={e => onChange('departmentName', e.target.value)}
-                    />
-
-                    <label>Street</label>
-                    <input
-                        value={form.address.street}
-                        onChange={e => setForm(f => ({
-                            ...f,
-                            address: { ...f.address, street: e.target.value }
-                        }))}
-                    />
-
-                    <label>City</label>
-                    <input
-                        value={form.address.city}
-                        onChange={e => setForm(f => ({
-                            ...f,
-                            address: { ...f.address, city: e.target.value }
-                        }))}
-                    />
-
-                    <label>Country</label>
-                    <input
-                        value={form.address.country}
-                        onChange={e => setForm(f => ({
-                            ...f,
-                            address: { ...f.address, country: e.target.value }
-                        }))}
-                    />
-
-                    <button className="btn" onClick={saveInfo}>
-                        Save Info
-                    </button>
+                    <button className="btn" onClick={addProject}>Add Project</button>
                 </div>
-
-                {/* --- Project Progress Section --- */}
-                <div className="form-section">
-                    <h3>Project Progress</h3>
-                    {emp.projectName.map(name => {
-                        // For demo, random progress percent:
-                        const percent = Math.floor(Math.random() * 80) + 10;
-                        const isDone = percent >= 100 || projUpdates.addProjects.includes(name);
-
-                        return (
-                            <div key={name} style={{ marginBottom: '1rem' }}>
-                                <div style={{
-                                    display: 'flex', justifyContent: 'space-between'
-                                }}>
-                                    <span>{name}</span>
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            checked={isDone}
-                                            onChange={e => toggleProject(name, e.target.checked)}
-                                        /> Done
-                                    </label>
-                                </div>
-                                <div style={{
-                                    background: 'var(--light-gray-2)',
-                                    borderRadius: '4px',
-                                    overflow: 'hidden',
-                                    height: '8px',
-                                    marginTop: '4px'
-                                }}>
-                                    <div style={{
-                                        width: `${Math.min(100, percent)}%`,
-                                        height: '100%',
-                                        background: 'var(--selective-blue)'
-                                    }} />
-                                </div>
-                            </div>
-                        );
-                    })}
-
-                    <button className="btn" onClick={saveProjects}>
-                        Save Projects
-                    </button>
-                </div>
-            </section>
-        </div>
-    );
+                <button
+                    className="btn"
+                    onClick={saveProjects}
+                    disabled={!dirty}
+                >
+                    Save Project Changes
+                </button>
+            </div>
+        </section>
+    </div>
+);
 }

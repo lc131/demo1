@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import AuthContext from './AuthContext';
 import { login as apiLogin, logout as apiLogout } from '../api/auth';
 import axios from "axios";
+import {useNavigate} from "react-router";
 
 // const AuthProvider = ({ children }) => {
 //     const [role, setRole] = useState(null);
@@ -36,6 +37,7 @@ import axios from "axios";
 
 export const AuthProvider = ({ children }) => {
     const [role, setRole] = useState(null);
+    // const navigate = useNavigate();
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -59,6 +61,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('token');
         delete axios.defaults.headers.common['Authorization'];
         setRole(null);
+        //navigate('/login');
     };
 
     return (

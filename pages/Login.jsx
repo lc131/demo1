@@ -26,7 +26,7 @@ const Login = () => {
         <div className="login-page-container">
             {/* Form login */}
             <form onSubmit={handleSubmit} className="login-form">
-                <h2 className="login-title"> Employee Portal Login</h2>
+                <h2 className="login-title"> Login </h2>
                 {/*Hiện lỗi nếu có*/}
                 {error && <p style={{color: 'red'}}>{error}</p>}
                 {/*Input USERNAME*/}
@@ -59,7 +59,7 @@ const Login = () => {
                 </div>
 
                 <button type="submit" className="login-button">Login</button>
-                <p><a href="/register">Register</a></p>
+                <p>Don't have an account? <b><a href="/register" >Register</a></b></p>
 
             </form>
         </div>

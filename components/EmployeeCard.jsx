@@ -44,7 +44,7 @@ export default function EmployeeCard({
             {/* Card content */}
             <div className="employee-card__header">
                 <div className="employee-card__name">
-                    {emp.firstName} {emp.lastName}
+                    {emp.lastName} {emp.firstName} #{emp.id}
                 </div>
                 <div className="employee-card__dept">
                     {emp.departmentName}
@@ -55,7 +55,7 @@ export default function EmployeeCard({
                 <p><strong>Email:</strong> {emp.emailId}</p>
                 {showAddress && emp.address && (
                     <p>
-                        <strong>Address:</strong> {emp.address.street}, {emp.address.city}
+                        <strong>Address:</strong> {emp.address.street}, {emp.address.city}, {emp.address.country}
                     </p>
                 )}
                 <p>

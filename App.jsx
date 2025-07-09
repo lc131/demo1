@@ -6,8 +6,10 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
-import EmployeeDashboard from './pages/EmployeeDashboard';
+//import EmployeeDashboard from './pages/EmployeeDashboard';
 import './index.css';
+import Dashboard from "./pages/Dashboard";
+import EditEmployeePage from "./pages/EditEmployeePage.jsx";
 
 export default function AppWrapper() {
     return (
@@ -18,22 +20,26 @@ export default function AppWrapper() {
 }
 
 function App() {
-    const { role } = useContext(AuthContext);
 
     return (
         <BrowserRouter>
             <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-
-                <Route
-                    path="/"
-                    element={
-                        <ProtectedRoute roles={['ADMIN', 'EMPLOYEE']}>
-                            {role === 'ADMIN' ? <AdminDashboard /> : <EmployeeDashboard />}
-                        </ProtectedRoute>
-                    }
-                />
+                <Route path="/*" element={
+                    <ProtectedRoute roles={['ADMIN', 'EMPLOYEE']}>
+                        <Dashboard />
+                    </ProtectedRoute>
+                }
+                       ></Route>
+                {/*<Route*/}
+                {/*    path="/"*/}
+                {/*    element={*/}
+                {/*        <ProtectedRoute roles={['ADMIN', 'EMPLOYEE']}>*/}
+                {/*            {role === 'ADMIN' ? <AdminDashboard /> : <EmployeeDashboard />}*/}
+                {/*        </ProtectedRoute>*/}
+                {/*    }*/}
+                <Route path="/edit/:id" element={<EditEmployeePage />} />
             </Routes>
         </BrowserRouter>
     );
